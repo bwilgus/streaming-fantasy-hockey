@@ -3,6 +3,7 @@ import pandas as pd
 from espn_api.hockey import League
 import config
 from datetime import datetime, timedelta
+from nhl_helpers import get_weekly_schedule
 
 # --- 1. CONFIGURATION ---
 
@@ -25,11 +26,37 @@ SCORING_GOALIE = {
     'SO': 3, 'OTL': 0.5
 }
 
-# Schedule Weights (1.0 = Streamer Friendly)
-DAY_WEIGHTS = {
-    'Mon': 1.0, 'Tue': 0.1, 'Wed': 0.8, 
-    'Thu': 0.1, 'Fri': 0.8, 'Sat': 0.0, 'Sun': 0.9
-}
+# 1. Calculate Schedule Weights Dynamically
+try:
+    week_schedule = get_weekly_schedule()
+    
+    # Count how many teams play each day
+    daily_counts = {k: 0 for k in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}
+    if week_schedule:
+        for days in week_schedule.values():
+            for day in days:
+                if day in daily_counts:
+                    daily_counts[day] += 1
+    
+    # Logic: If > 16 teams play (8 games), it's a "Busy Night" (Low Value)
+    # If < 16 teams play, it's an "Off Night" (High Value)
+    DAY_WEIGHTS = {}
+    for day, count in daily_counts.items():
+        if count > 16:
+            DAY_WEIGHTS[day] = 0.1  # Busy night (likely full roster)
+        elif count == 0:
+            DAY_WEIGHTS[day] = 0.0  # No games at all
+        else:
+            DAY_WEIGHTS[day] = 1.0  # Off-night (Gold mine)
+
+except Exception as e:
+    # Fallback if API fails
+    print(f"Schedule calc failed: {e}")
+    DAY_WEIGHTS = {'Mon': 1.0, 'Tue': 0.1, 'Wed': 0.8, 'Thu': 0.1, 'Fri': 0.8, 'Sat': 0.0, 'Sun': 0.9}
+
+# Display weights in sidebar so you can trust the math
+st.sidebar.caption("📅 **Dynamic Schedule Weights**")
+st.sidebar.json(DAY_WEIGHTS)
 
 # --- 2. HELPER FUNCTIONS ---
 
@@ -88,8 +115,12 @@ try:
         st.warning(f"⚠️ Max goalies reached ({goalie_count}).")
 
     # CREATE TABS HERE (Must happen before 'with tab1:')
-    tab1, tab2, tab3 = st.tabs(["📊 Roster Analysis", "🚀 Stream Targets (Skaters)", "🥅 Stream Targets (Goalies)"])
-
+    tab1, tab2, tab3, tab4 = st.tabs([
+    "📊 Roster Analysis", 
+    "🚀 Stream Targets (Skaters)", 
+    "🥅 Stream Targets (Goalies)", 
+    "📅 Schedule Optimizer"
+])
     # --- TAB 1: ROSTER ---
     with tab1:
         st.write("**My Team Performance**")
@@ -166,6 +197,54 @@ try:
                 st.dataframe(df_fa_g.sort_values(by="Stream Score", ascending=False), use_container_width=True)
             else:
                 st.info("No goalies found.")
+
+# --- TAB 4: SCHEDULE OPTIMIZER ---
+    with tab4:
+        st.write("**Weekly Schedule Analysis**")
+        
+        # 1. Fetch Real Schedule
+        schedule = get_weekly_schedule() # Returns {'PIT': ['Mon', 'Thu'], ...}
+        
+        if not schedule:
+            st.error("Could not fetch NHL schedule data.")
+        else:
+            # 2. Calculate Daily Volume (How many teams play each day?)
+            # We initialize counts for all days to ensure the chart looks right
+            day_counts = {day: 0 for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}
+            
+            for team_days in schedule.values():
+                for day in team_days:
+                    if day in day_counts:
+                        day_counts[day] += 1
+            
+            # 3. Visualize "Off Nights"
+            st.caption("Fewer games = Better days to stream players (Off-Nights)")
+            st.bar_chart(day_counts)
+            
+            # 4. Show My Team's Schedule
+            st.subheader("My Roster's Schedule")
+            
+            roster_schedule = []
+            for p in my_team.roster:
+                # Get the days this specific player's team plays
+                # 'proTeam' gives the abbreviation (e.g. 'NYR')
+                playing_days = schedule.get(p.proTeam, [])
+                
+                roster_schedule.append({
+                    "Player": p.name,
+                    "Team": p.proTeam,
+                    "Games": len(playing_days),
+                    "Schedule": ", ".join(playing_days)
+                })
+            
+            df_schedule = pd.DataFrame(roster_schedule)
+            
+            # specific sorting: Sort by Games (descending), then Player Name
+            st.dataframe(
+                df_schedule.sort_values(by=["Games", "Player"], ascending=[False, True]),
+                use_container_width=True,
+                hide_index=True # Cleaner look
+            )
 
 except Exception as e:
     st.error(f"Something went wrong: {e}")
