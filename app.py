@@ -85,7 +85,7 @@ def get_avg_points(player):
     """Derives Average Points Per Game manually."""
     stats = get_player_stats(player)
     total_pts = calculate_fantasy_points(player)
-    games_played = stats.get('30', 0) + stats.get('GP', 0)
+    games_played = stats.get('30', 0)
     
     if games_played > 0:
         return round(total_pts / games_played, 2)
