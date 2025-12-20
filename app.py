@@ -141,10 +141,10 @@ try:
             roster_data.append({
                 "Player": p.name,
                 "Pos": pos,
+                "GP": int(get_player_stats(p).get('30', 0)),
                 "Avg Pts": avg,
                 "Total Pts": total,
                 "Stream Score": ss,
-                "GP": int(get_player_stats(p).get('GP', 0) + get_player_stats(p).get('GS',0)),
                 "% Own": own_pct
             })
         
@@ -171,6 +171,7 @@ try:
                         "Player": p.name,
                         "Team": p.proTeam,
                         "Pos": p.position,
+                        "GP":int(get_player_stats(p).get('30', 0))
                         "Avg Pts": avg,
                         "Stream Score": score,
                         "Injury Status": inj
@@ -198,6 +199,7 @@ try:
                         fa_data_g.append({
                             "Player": p.name,
                             "Team": p.proTeam,
+                            "GP":int(get_player_stats(p).get('30', 0))
                             "Avg Pts": avg,
                             "Stream Score": score,
                             "Injury Status": inj
