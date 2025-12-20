@@ -64,7 +64,7 @@ st.sidebar.json(DAY_WEIGHTS)
 
 def get_player_stats(player):
     """Safely extracts stats, preferring 2026 but falling back to 2025."""
-    if 'Total 2026' in player.stats and player.stats['Total 2026']['total']:
+    if 'Last 15 2026' in player.stats and player.stats['Last 15 2026']['total']:
         return player.stats['Last 15 2026']['total']
     return {}
 
