@@ -133,9 +133,14 @@ try:
             # FIX: Use getattr to handle missing ownership data
             own_pct = getattr(p, 'percent_owned', 'N/A')
             
+            if p.position in ['Center','Right Wing','Left Wing']:
+                pos = 'Forward'
+            else:
+                pos = p.position
+
             roster_data.append({
                 "Player": p.name,
-                "Pos": p.position,
+                "Pos": pos,
                 "Avg Pts": avg,
                 "Total Pts": total,
                 "Stream Score": ss,
