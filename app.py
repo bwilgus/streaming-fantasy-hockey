@@ -171,7 +171,7 @@ try:
                         "Player": p.name,
                         "Team": p.proTeam,
                         "Pos": p.position,
-                        "GP":int(get_player_stats(p).get('30', 0))
+                        "GP":int(get_player_stats(p).get('30', 0)),
                         "Avg Pts": avg,
                         "Stream Score": score,
                         "Injury Status": inj
@@ -199,7 +199,7 @@ try:
                         fa_data_g.append({
                             "Player": p.name,
                             "Team": p.proTeam,
-                            "GP":int(get_player_stats(p).get('30', 0))
+                            "GP":int(get_player_stats(p).get('30', 0)),
                             "Avg Pts": avg,
                             "Stream Score": score,
                             "Injury Status": inj
