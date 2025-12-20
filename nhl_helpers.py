@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 def get_weekly_schedule():
     """
@@ -10,10 +10,15 @@ def get_weekly_schedule():
         dict: { "PIT": ["Mon", "Thu", "Sat"], "NYR": ["Tue", "Fri"], ... }
     """
     # 1. Get today's date in YYYY-MM-DD format
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    today = date.today()
+    days_from_monday = (today.weekday() + 7) % 7
+    subt_days = timedelta(days_from_monday)
+    start_date = today - subt_days
+    day_str = start_date.strftime("%Y-%m-%d")
+    
     
     # 2. Hit the API (This endpoint returns a full week of data starting from 'today')
-    url = f"https://api-web.nhle.com/v1/schedule/{today_str}"
+    url = f"https://api-web.nhle.com/v1/schedule/{day_str}"
     
     try:
         response = requests.get(url)
@@ -28,16 +33,17 @@ def get_weekly_schedule():
             day_name = date_obj.strftime("%a") # e.g., "Mon", "Tue"
             
             for game in day_info.get('games', []):
-                # Extract team abbreviations (e.g., "PIT", "WSH")
-                away_team = game['awayTeam']['abbrev']
-                home_team = game['homeTeam']['abbrev']
-                
-                # Add to our map
-                if away_team not in team_schedule: team_schedule[away_team] = []
-                if home_team not in team_schedule: team_schedule[home_team] = []
-                
-                team_schedule[away_team].append(day_name)
-                team_schedule[home_team].append(day_name)
+                if date_obj.date() >= date.today():
+                    # Extract team abbreviations (e.g., "PIT", "WSH")
+                    away_team = game['awayTeam']['abbrev']
+                    home_team = game['homeTeam']['abbrev']
+                    
+                    # Add to our map
+                    if away_team not in team_schedule: team_schedule[away_team] = []
+                    if home_team not in team_schedule: team_schedule[home_team] = []
+                    
+                    team_schedule[away_team].append(day_name)
+                    team_schedule[home_team].append(day_name)
                 
         return team_schedule
 
