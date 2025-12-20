@@ -145,7 +145,7 @@ try:
         
         df_roster = pd.DataFrame(roster_data)
         st.dataframe(
-            df_roster.sort_values(by="Avg Pts", ascending=True)
+            df_roster.sort_values(by=["Pos","Avg Pts"], ascending=True)
             .style.background_gradient(subset=['Avg Pts'], cmap="RdYlGn"),
             use_container_width=True
         )
