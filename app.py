@@ -61,11 +61,9 @@ st.sidebar.json(DAY_WEIGHTS)
 # --- 2. HELPER FUNCTIONS ---
 
 def get_player_stats(player):
-    """Safely extracts stats, preferring 2026 but falling back to 2025."""
+    """Safely extracts stats."""
     if 'Total 2026' in player.stats and player.stats['Total 2026']['total']:
         return player.stats['Total 2026']['total']
-    elif 'Total 2025' in player.stats and player.stats['Total 2025']['total']:
-        return player.stats['Total 2025']['total']
     return {}
 
 def calculate_fantasy_points(player):
