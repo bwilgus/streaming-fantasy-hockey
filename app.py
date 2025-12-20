@@ -9,7 +9,7 @@ from nhl_helpers import get_weekly_schedule
 
 # Roster Limits
 LIMITS = {
-    'F': 9, 'D': 5, 'G': 2,
+    'F': 9, 'D': 5, 'G': 4,
     'Bench': 5, 'IR': 2,
     'Max_Goalies_On_Team': 4
 }
@@ -31,7 +31,9 @@ try:
     week_schedule = get_weekly_schedule()
     
     # Count how many teams play each day
+    ## Makes dictionary with 0 for every day
     daily_counts = {k: 0 for k in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}
+    #Adds 1 for every game on a given day
     if week_schedule:
         for days in week_schedule.values():
             for day in days:
@@ -61,9 +63,9 @@ st.sidebar.json(DAY_WEIGHTS)
 # --- 2. HELPER FUNCTIONS ---
 
 def get_player_stats(player):
-    """Safely extracts stats."""
+    """Safely extracts stats, preferring 2026 but falling back to 2025."""
     if 'Total 2026' in player.stats and player.stats['Total 2026']['total']:
-        return player.stats['Total 2026']['total']
+        return player.stats['Last 15 2026']['total']
     return {}
 
 def calculate_fantasy_points(player):
@@ -71,7 +73,7 @@ def calculate_fantasy_points(player):
     stats = get_player_stats(player)
     total_points = 0.0
     
-    rules = SCORING_GOALIE if player.position == 'G' else SCORING_SKATER
+    rules = SCORING_GOALIE if player.position == 'Goalie' else SCORING_SKATER
         
     for category, weight in rules.items():
         value = stats.get(category, 0)
@@ -83,7 +85,7 @@ def get_avg_points(player):
     """Derives Average Points Per Game manually."""
     stats = get_player_stats(player)
     total_pts = calculate_fantasy_points(player)
-    games_played = stats.get('GP', 0)
+    games_played = stats.get('30', 0) + stats.get('GP', 0)
     
     if games_played > 0:
         return round(total_pts / games_played, 2)
@@ -106,7 +108,7 @@ try:
     st.title(f"🏒 {my_team.team_name} War Room")
     
     # Check Goalie Limits
-    goalie_count = len([p for p in my_team.roster if p.position == 'G'])
+    goalie_count = len([p for p in my_team.roster if p.position == 'Goalie'])
     st.caption(f"Roster: {len(my_team.roster)} Players | Goalies: {goalie_count}/{LIMITS['Max_Goalies_On_Team']}")
     
     if goalie_count >= LIMITS['Max_Goalies_On_Team']:
@@ -126,6 +128,7 @@ try:
         for p in my_team.roster:
             avg = get_avg_points(p)
             total = calculate_fantasy_points(p)
+            ss = get_stream_score(p)
             
             # FIX: Use getattr to handle missing ownership data
             own_pct = getattr(p, 'percent_owned', 'N/A')
@@ -135,7 +138,8 @@ try:
                 "Pos": p.position,
                 "Avg Pts": avg,
                 "Total Pts": total,
-                "GP": int(get_player_stats(p).get('GP', 0)),
+                "Stream Score": ss,
+                "GP": int(get_player_stats(p).get('GP', 0) + get_player_stats(p).get('GS',0)),
                 "% Own": own_pct
             })
         
@@ -153,16 +157,18 @@ try:
         fa_data = []
         
         for p in free_agents:
-            if p.position != 'G':
+            if p.position != 'Goalie':
                 avg = get_avg_points(p)
                 if avg > 1.5: 
                     score = get_stream_score(p)
+                    inj = p.injuryStatus
                     fa_data.append({
                         "Player": p.name,
                         "Team": p.proTeam,
                         "Pos": p.position,
                         "Avg Pts": avg,
-                        "Stream Score": score
+                        "Stream Score": score,
+                        "Injury Status": inj
                     })
         
         df_fa = pd.DataFrame(fa_data)
@@ -179,15 +185,17 @@ try:
         else:
             fa_data_g = []
             for p in free_agents:
-                if p.position == 'G':
+                if p.position == 'Goalie':
                     avg = get_avg_points(p)
                     if avg > 0:
+                        inj = p.injuryStatus
                         score = get_stream_score(p)
                         fa_data_g.append({
                             "Player": p.name,
                             "Team": p.proTeam,
                             "Avg Pts": avg,
-                            "Stream Score": score
+                            "Stream Score": score,
+                            "Injury Status": inj
                         })
             
             df_fa_g = pd.DataFrame(fa_data_g)

@@ -6,7 +6,7 @@ import pprint
 league = League(league_id=config.LEAGUE_ID, year=config.YEAR, espn_s2=config.ESPN_S2, swid=config.SWID)
 
 # Get one player
-team = league.teams[0]
+team = league.teams[7]
 player = team.roster[0]
 
 print(f"--- Inspecting: {player.name} ---")
