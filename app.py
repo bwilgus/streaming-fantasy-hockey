@@ -327,11 +327,14 @@ try:
         for p in all_players:
             playing_days = schedule.get(teams_dict[p.proTeam],[])
 
+            avg = get_avg_points(p)
+
             row = {
                 "Player":p.name,
                 "Position":p.position,
                 "Team":teams_dict[p.proTeam],
-                "Status":p.status
+                "Status":p.status,
+                "Last 15 Avg Pts":avg
             }
 
             for day in weekdays:
@@ -343,7 +346,7 @@ try:
         df = pd.DataFrame(rows)
         
         df['Total Games'] = df[weekdays].sum(axis=1)
-        cols = ['Player','Position','Team','Status','Total Games'] + weekdays
+        cols = ['Player','Position','Team','Status','Last 15 Avg Pts','Total Games'] + weekdays
         
         df = df[cols]
 
