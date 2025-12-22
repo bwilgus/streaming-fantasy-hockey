@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 from espn_api.hockey import League
 import config
 from datetime import datetime, timedelta
@@ -139,6 +140,50 @@ def get_stream_score(player):
     avg_pts = get_avg_points(player)
     avg_week_weight = sum(DAY_WEIGHTS.values()) / 7
     return round(avg_pts * avg_week_weight * 3, 2)
+
+def filter_dataframe(df):
+    """
+    Adds a UI on top of a dataframe to let viewers filter columns
+    """
+    modify = st.checkbox("Add filters")
+    if not modify:
+        return df
+
+    df = df.copy()
+    
+    # Try to convert datetimes into a standard format (optional, usually good for CSVs)
+    for col in df.columns:
+        if is_numeric_dtype(df[col]):
+            continue
+            
+    modification_container = st.container()
+    with modification_container:
+        to_filter_columns = st.multiselect("Filter dataframe on", df.columns)
+        
+        for column in to_filter_columns:
+            left, right = st.columns((1, 20))
+            # Treat columns with < 10 unique values as categorical
+            if is_numeric_dtype(df[column]):
+                _min = float(df[column].min())
+                _max = float(df[column].max())
+                step = (_max - _min) / 100
+                user_num_input = right.slider(
+                    f"Values for {column}",
+                    min_value=_min,
+                    max_value=_max,
+                    value=(_min, _max),
+                    step=step,
+                )
+                df = df[df[column].between(*user_num_input)]
+            else:
+                user_cat_input = right.multiselect(
+                    f"Values for {column}",
+                    df[column].unique(),
+                    default=list(df[column].unique()),
+                )
+                df = df[df[column].isin(user_cat_input)]
+                
+    return df
 
 # --- 3. MAIN APP ---
 st.set_page_config(page_title="Fantasy War Room", layout="wide")
@@ -362,7 +407,7 @@ try:
         df = df[cols]
 
         # 4. Display
-        st.dataframe(df) 
+        st.dataframe(filter_dataframe(df)) 
 
 except Exception as e:
     st.error(f"Something went wrong: {e}")
