@@ -55,6 +55,7 @@ teams_dict = {
     ,'STL':'St. Louis Blues'
     ,'TBL':'Tampa Bay Lightning'
     ,'TOR':'Toronto Maple Leafs'
+    ,'UNK':'Unknown Team'
     ,'UTA':'Utah Hockey Club'
     ,'VAN':'Vancouver Canucks'
     ,'VGK':'Vegas Golden Knights'
