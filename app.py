@@ -26,6 +26,47 @@ SCORING_GOALIE = {
     'SO': 3, 'OTL': 0.5
 }
 
+# Team Dictionary
+teams_dict = {
+    'ANA':'Anaheim Ducks'
+    ,'BOS':'Boston Bruins'
+    ,'BUF':'Buffalo Sabres'
+    ,'CAR':'Carolina Hurricanes'
+    ,'CBJ':'Columbus Blue Jackets'
+    ,'CGY':'Calgary Flames'
+    ,'CHI':'Chicago Blackhawks'
+    ,'COL':'Colorado Avalanche'
+    ,'DAL':'Dallas Stars'
+    ,'DET':'Detroit Red Wings'
+    ,'EDM':'Edmonton Oilers'
+    ,'FLA':'Florida Panthers'
+    ,'LAK':'Los Angeles Kings'
+    ,'MIN':'Minnesota Wild'
+    ,'MTL':'Montréal Canadiens'
+    ,'NJD':'New Jersey Devils'
+    ,'NSH':'Nashville Predators'
+    ,'NYI':'New York Islanders'
+    ,'NYR':'New York Rangers'
+    ,'OTT':'Ottawa Senators'
+    ,'PHI':'Philadelphia Flyers'
+    ,'PIT':'Pittsburgh Penguins'
+    ,'SEA':'Seattle Kraken'
+    ,'SJS':'San Jose Sharks'
+    ,'STL':'St. Louis Blues'
+    ,'TBL':'Tampa Bay Lightning'
+    ,'TOR':'Toronto Maple Leafs'
+    ,'UTA':'Utah Hockey Club'
+    ,'VAN':'Vancouver Canucks'
+    ,'VGK':'Vegas Golden Knights'
+    ,'WPG':'Winnipeg Jets'
+    ,'WSH':'Washington Capitals'}
+
+# Inverse of teams_dict
+teams_reverse = {v:k for k, v in teams_dict.items()}
+
+# Union two dictionaries
+teams_dict.update(teams_reverse)
+
 # 1. Calculate Schedule Weights Dynamically
 try:
     week_schedule = get_weekly_schedule()
@@ -158,7 +199,7 @@ try:
     # --- TAB 2: SKATER STREAMERS ---
     with tab2:
         st.write("**Top Available Forwards & Defensemen**")
-        free_agents = league.free_agents(size=40)
+        free_agents = league.free_agents(size=1500)
         fa_data = []
         
         for p in free_agents:
@@ -241,7 +282,7 @@ try:
             for p in my_team.roster:
                 # Get the days this specific player's team plays
                 # 'proTeam' gives the abbreviation (e.g. 'NYR')
-                playing_days = schedule.get(p.proTeam, [])
+                playing_days = schedule.get(teams_dict[p.proTeam], [])
                 
                 roster_schedule.append({
                     "Player": p.name,
