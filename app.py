@@ -309,7 +309,7 @@ try:
         # 1. Getting list of my players and free agents
         all_players = []
 
-        for p in my_team.players:
+        for p in my_team.roster:
             p.status = "On Roster"
             all_players.append(p)
 
