@@ -61,6 +61,7 @@ teams_dict = {
     ,'WPG':'Winnipeg Jets'
     ,'WSH':'Washington Capitals'}
 
+
 # Inverse of teams_dict
 teams_reverse = {v:k for k, v in teams_dict.items()}
 
@@ -156,7 +157,7 @@ try:
         st.warning(f"⚠️ Max goalies reached ({goalie_count}).")
 
     # CREATE TABS HERE (Must happen before 'with tab1:')
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 Roster Analysis", 
     "🚀 Stream Targets (Skaters)", 
     "🥅 Stream Targets (Goalies)", 
@@ -299,6 +300,48 @@ try:
                 use_container_width=True,
                 hide_index=True # Cleaner look
             )
+
+# --- TAB 5: Schedule Matrix ---
+    with tab5:
+        st.write("**Schedule Matrix**")
+
+        # 1. Getting list of my players and free agents
+        all_players = []
+
+        for p in my_team.players:
+            p.status = "On Roster"
+            all_players.append(p)
+
+        for p in free_agents:
+            p.status = "Free Agent"
+            all_players.append(p)
+        
+        # 2. Build data rows
+        rows = []
+
+        # Weekday columns
+        weekdays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+
+        for p in all_players:
+            playing_days = schedule.get(teams_dict[p.proTeam],[])
+
+            row = {
+                "Player":p.name,
+                "Position":p.position,
+                "Team":teams_dict[p.proTeam],
+                "Status":p.status
+            }
+
+            for day in weekdays:
+                row[day] = 1 if day in playing_days else 0
+            
+            rows.append(row)
+        
+        # 3. Create dataframe
+        df = pd.DataFrame(rows)
+
+        # 4. Display
+        st.dataframe(df) 
 
 except Exception as e:
     st.error(f"Something went wrong: {e}")
