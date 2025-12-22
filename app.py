@@ -161,7 +161,8 @@ try:
     "📊 Roster Analysis", 
     "🚀 Stream Targets (Skaters)", 
     "🥅 Stream Targets (Goalies)", 
-    "📅 Schedule Optimizer"
+    "📅 Schedule Optimizer",
+    "Schedule Matrix"
 ])
     # --- TAB 1: ROSTER ---
     with tab1:
