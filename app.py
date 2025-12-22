@@ -341,6 +341,11 @@ try:
         
         # 3. Create dataframe
         df = pd.DataFrame(rows)
+        
+        df['Total Games'] = df[weekdays].sum(axis=1)
+        cols = ['Player','Position','Team','Status','Total Games'] + weekdays
+        
+        df = df[cols]
 
         # 4. Display
         st.dataframe(df) 
