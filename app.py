@@ -328,7 +328,7 @@ try:
             playing_days = schedule.get(teams_dict[p.proTeam],[])
 
             avg = get_avg_points(p)
-            stats = get_player_stats(player)
+            stats = get_player_stats(p)
             games_played = stats.get('30', 0)
 
             row = {
