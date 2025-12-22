@@ -355,7 +355,7 @@ try:
                 'Team',
                 'Status',
                 'L15 Avg Pts',
-                'L15 Games Played'
+                'L15 Games Played',
                 'Games Scheduled'
                 ] + weekdays
         
