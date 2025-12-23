@@ -188,8 +188,20 @@ def filter_dataframe(df):
 st.set_page_config(page_title="Fantasy War Room", layout="wide")
 
 try:
+    import config
+    LEAGUE_ID = config.LEAGUE_ID
+    YEAR = config.YEAR
+    ESPN_S2 = config.ESPN_S2
+    SWID = config.SWID
+except ImportError:
+    LEAGUE_ID = st.secrets["LEAGUE_ID"]
+    YEAR = st.secrets["YEAR"]
+    ESPN_S2 = st.secrets["ESPN_S2"]
+    SWID = st.secrets["SWID"]
+
+try:
     # Connect to ESPN
-    league = League(league_id=config.LEAGUE_ID, year=config.YEAR, espn_s2=config.ESPN_S2, swid=config.SWID)
+    league = League(league_id=LEAGUE_ID, year=YEAR, espn_s2=ESPN_S2, swid=SWID)
     my_team = league.teams[7] 
 
     st.title(f"🏒 {my_team.team_name} War Room")
