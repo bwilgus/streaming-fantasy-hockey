@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 from espn_api.hockey import League
-import config
 from datetime import datetime, timedelta
 from nhl_helpers import get_weekly_schedule
 
