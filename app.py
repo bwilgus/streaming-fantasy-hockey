@@ -56,7 +56,7 @@ teams_dict = {
     ,'TBL':'Tampa Bay Lightning'
     ,'TOR':'Toronto Maple Leafs'
     ,'UNK':'Unknown Team'
-    ,'UTA':'Utah Hockey Club'
+    ,'UTA':'Utah Mammoth'
     ,'VAN':'Vancouver Canucks'
     ,'VGK':'Vegas Golden Knights'
     ,'WPG':'Winnipeg Jets'
@@ -68,6 +68,9 @@ teams_reverse = {v:k for k, v in teams_dict.items()}
 
 # Union two dictionaries
 teams_dict.update(teams_reverse)
+
+# Utah's pre-2025 name, in case ESPN still reports it
+teams_dict['Utah Hockey Club'] = 'UTA'
 
 # 1. Calculate Schedule Weights Dynamically
 try:
@@ -106,9 +109,10 @@ st.sidebar.json(DAY_WEIGHTS)
 # --- 2. HELPER FUNCTIONS ---
 
 def get_player_stats(player):
-    """Safely extracts stats, preferring 2026 but falling back to 2025."""
-    if 'Last 15 2026' in player.stats and player.stats['Last 15 2026']['total']:
-        return player.stats['Last 15 2026']['total']
+    """Prefers current-season Last 15, falls back to season totals, then last season's totals."""
+    for key in (f'Last 15 {YEAR}', f'Total {YEAR}', f'Total {YEAR - 1}'):
+        if key in player.stats and player.stats[key].get('total'):
+            return player.stats[key]['total']
     return {}
 
 def calculate_fantasy_points(player):
@@ -202,7 +206,10 @@ except ImportError:
 try:
     # Connect to ESPN
     league = League(league_id=LEAGUE_ID, year=YEAR, espn_s2=ESPN_S2, swid=SWID)
-    my_team = league.teams[7] 
+    # Pick your team by name so league changes don't shift which team is shown
+    team_names = [t.team_name for t in league.teams]
+    selected_team = st.sidebar.selectbox("Your team", team_names, index=min(7, len(team_names) - 1))
+    my_team = league.teams[team_names.index(selected_team)]
 
     st.title(f"🏒 {my_team.team_name} War Room")
     
